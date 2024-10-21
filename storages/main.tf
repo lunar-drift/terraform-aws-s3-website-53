@@ -5,6 +5,13 @@ resource "aws_s3_bucket" "main" {
   tags   = var.tags
 }
 
+resource "aws_s3_bucket_versioning" "main" {
+  bucket = aws_s3_bucket.main.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
 resource "aws_s3_bucket_public_access_block" "main_public_access" {
   bucket                  = aws_s3_bucket.main.id
   block_public_acls       = true
@@ -15,7 +22,7 @@ resource "aws_s3_bucket_public_access_block" "main_public_access" {
 
 resource "aws_s3_bucket_policy" "main" {
   bucket = aws_s3_bucket.main.id
-  policy = data.aws_iam_policy_document.allow_public_get_access
+  policy = data.aws_iam_policy_document.allow_public_get_access.json
 }
 
 # -- policies --
