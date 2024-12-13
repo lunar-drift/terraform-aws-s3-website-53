@@ -10,3 +10,8 @@ variable "tags" {
 variable "domain_name" {
   type = string
 }
+
+variable "_create_r53_zone" {
+  default = false
+  type = bool
+}

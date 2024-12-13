@@ -4,7 +4,7 @@ module "dns" {
   source          = "spacelift.io/gspider8/dns/aws"
   version         = "0.0.6"
   domain_name     = var.domain_name
-  create_r53_zone = false
+  create_r53_zone = var._create_r53_zone
   dns_records = {
     main = {
       test = {

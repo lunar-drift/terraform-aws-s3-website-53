@@ -16,5 +16,5 @@ variable "domain_name" { default = "domain.test" }
 module "s3-static-website" {
   source = "../../"
   domain_name = var.domain_name
-
+  _create_r53_zone = true
 }
