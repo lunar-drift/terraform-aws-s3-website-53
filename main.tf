@@ -1,7 +1,7 @@
 # --- aws-s3-53/main.tf ---
 
 module "dns" {
-  source          = "spacelift.io/gspider8/s3-website-53/aws"
+  source          = "spacelift.io/gspider8/dns/aws"
   version         = "0.0.6"
   domain_name     = var.domain_name
   create_r53_zone = false
