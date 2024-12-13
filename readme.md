@@ -47,6 +47,7 @@ module "s3_website" {
 
 ### Future Updates
 - Optional parameter to add CORS Configuration and additional S3 settings.
+- Additional CloudFront Configurations. Maybe create a shared module.
 
 ### Developer Resources
 - https://www.freecodecamp.org/news/aws-project-build-a-resume/
