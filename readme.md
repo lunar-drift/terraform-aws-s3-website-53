@@ -8,11 +8,15 @@ Public Repo: https://github.com/gspider8/terraform-aws-s3-website-53
 - us-east 1 or else cloudfront / certificate / connect will not work
 - Route 53 Zone already created
 
-### Module Input Variables
+
+### Variables
+#### Module Input Variables
 - `domain_name` - Base domain name for hosted zone e.g. 'example.com'.
 - `tags` - Map of key/value pairs to tag certain created items
+#### Other Variables
+- `_create_r53_zone` - used in testing.
 
-#### Usage
+### Usage
 ```terraform
 module "s3_website" {
   source  = "spacelift.io/gspider8/s3-website-53/aws"
@@ -25,14 +29,21 @@ module "s3_website" {
   }
 }
 ```
-### 
+### Outputs
+- `route_53_zone` - DNS Zone Map
+- `bucket` - Bucket Map
+- `bucket_policy` - Bucket Policy Map
+- `bucket_website_configuration` - Bucket Website Map
+- `acm_certificate` - ACM Certificate Map
+- `cloudfront_distribution` - CF Dist Map
+
+### Authors 
+- gspider8
 
 ### Future Updates
+- Optional parameter to add CORS Configuration and additional S3 settings.
 
-- Optional parameter to add CORS Configuration
-
-## Developer Resources
-
+### Developer Resources
 - https://www.freecodecamp.org/news/aws-project-build-a-resume/
 - https://medium.com/@Markus.Hanslik/setting-up-an-ssl-certificate-using-aws-and-terraform-198c6fb90743
 - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation
