@@ -13,7 +13,7 @@ Public Repo: https://github.com/gspider8/terraform-aws-s3-website-53
 #### Module Input Variables
 - `domain_name` - Base domain name for hosted zone e.g. 'example.com'.
 - `tags` - Map of key/value pairs to tag certain created items.
-- `dns_records` - Map with all dns records that you would like to add. If you do not need any records set to `main = {}`
+- `dns_records` - Map with all dns records that you would like to add. Optional
   - `main.name` - record name i.e domain name, subdomain...
   - `main.type` - record type (A, AAAA, CAA,s3 CNAME, DS, MX, NAPTR, NS, PTR, SOA, SPF, SRV and TXT)
   - `main.ttl` - record time to live.

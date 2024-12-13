@@ -16,6 +16,7 @@ variable "domain_name" {
 variable "dns_records" {
   description = "For each record in main, include name, type, ttl, & records"
   type        = map(any)
+  default     = { main = {} }
 }
 
 # Phase out

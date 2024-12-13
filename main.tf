@@ -1,33 +1,26 @@
 # --- aws-s3-53/main.tf ---
 
 module "dns" {
-  source          = "spacelift.io/gspider8/dns/aws"
-  version         = "0.0.14"
+  source  = "spacelift.io/gspider8/dns/aws"
+  version = "0.0.14"
+
   domain_name     = var.domain_name
   create_r53_zone = var._create_r53_zone
-  dns_records = {
-    main = {
-      test = {
-        name    = var.domain_name
-        type    = "TXT"
-        ttl     = 60
-        records = ["test content"]
-      }
-    }
-  }
+  tags            = var.tags
+  dns_records     = var.dns_records
 }
 
 # data "aws_route53_zone" "main" {
 #   name = var.domain_name
 # }
-#
-# module "s3_bucket" {
-#   source      = "./storages"
-#   # Creates bucket and attaches necessary permissions
-#   bucket_name = var.domain_name
-#   tags        = var.tags
-# }
-#
+
+# Creates bucket and attaches necessary permissions
+module "s3_bucket" {
+  source      = "./storages"
+  bucket_name = var.domain_name
+  tags        = var.tags
+}
+
 # resource "aws_s3_bucket_website_configuration" "hosting" {
 #   bucket = module.s3_bucket.bucket.id
 #   index_document { suffix = "index.html" }

@@ -1,14 +1,18 @@
 # The version of the configuration file format
 version: 1
 # Your module version - must be changed to release a new version
-module_version: 0.0.3
+module_version: 0.0.4
 
 # Any default settings that should be used for all test cases
 test_defaults:
   terraform_version: 1.5.7
-#  before_init: ["terraform fmt -check"]
+  before_init: ["terraform fmt -check"]
 
 # The set of tests to run to verify your module works correctly
 tests:
+  - name: storages-submodule
+    project_root: storages
+    environment:
+      TF_VAR_bucket_name: s3-static-website-test-56471
   - name: example-main
     project_root: examples/main
