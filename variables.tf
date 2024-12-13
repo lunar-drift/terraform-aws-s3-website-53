@@ -1,4 +1,4 @@
-# --- aws-s3-53/variables.tf ---
+# --- s3-static-website/variables.tf ---
 
 variable "tags" {
   description = "Map of key/value pairs to tag certain created items."
@@ -19,7 +19,8 @@ variable "dns_records" {
   default     = { main = {} }
 }
 
-# Phase out
+# --- DevOps ---
+
 variable "_create_r53_zone" {
   description = "Used in testing to create r53 zones"
   default     = false

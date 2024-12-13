@@ -1,4 +1,4 @@
-# --- aws-s3-53/main.tf ---
+# --- s3-static-website/main.tf ---
 
 module "dns" {
   source  = "spacelift.io/gspider8/dns/aws"
@@ -21,37 +21,38 @@ module "s3_bucket" {
   tags        = var.tags
 }
 
-# resource "aws_s3_bucket_website_configuration" "hosting" {
-#   bucket = module.s3_bucket.bucket.id
-#   index_document { suffix = "index.html" }
-#   error_document { key = "error.html" }
-# }
-#
-# resource "aws_acm_certificate" "cert" {
-#   domain_name       = data.aws_route53_zone.main.name
-#   validation_method = "DNS"
-#   lifecycle {
-#     create_before_destroy = true
-#   }
-# }
-#
-# resource "aws_route53_record" "cert_validation" {
-#   for_each = {
-#     for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
-#       name   = dvo.resource_record_name
-#       record = dvo.resource_record_value
-#       type   = dvo.resource_record_type
-#     }
-#   }
-#
-#   allow_overwrite = true
-#   name            = each.value.name
-#   records         = [each.value.record]
-#   ttl             = 60
-#   type            = each.value.type
-#   zone_id         = data.aws_route53_zone.main.zone_id
-# }
-#
+resource "aws_s3_bucket_website_configuration" "hosting" {
+  bucket = module.s3_bucket.bucket.id
+  index_document { suffix = "index.html" }
+  error_document { key = "error.html" }
+}
+
+resource "aws_acm_certificate" "cert" {
+  domain_name       = var.domain_name
+  subject_alternative_names = ["*.${var.domain_name}"]
+  validation_method = "DNS"
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_route53_record" "cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = module.dns.route53_zone.zone_id
+}
+
 # resource "aws_cloudfront_distribution" "main" {
 #   depends_on          = [aws_acm_certificate.cert]
 #   default_root_object = "index.html"
