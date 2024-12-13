@@ -1,25 +1,35 @@
-## Getting Started
+# S3 Static Website w/SSL
+A terraform module to provide a DNS configuration with Route 53, a bucket to store files in,
+an SSL certificate managed by ACM, and a cloudfront distribution.
 
 Public Repo: https://github.com/gspider8/terraform-aws-s3-website-53
 
-#### Requirements
-
+### Requirements
 - us-east 1 or else cloudfront / certificate / connect will not work
-- Existing domain name on route 53
+- Route 53 Zone already created
 
-#### Sample Usage
+### Module Input Variables
+- `domain_name` - Base domain name for hosted zone e.g. 'example.com'.
+- `tags` - Map of key/value pairs to tag certain created items
 
-```HCL
+#### Usage
+```terraform
 module "s3_website" {
-  source = "github.com/gspider8/terraform-aws-s3-website-53?ref=v0.0.2"
+  source  = "spacelift.io/gspider8/s3-website-53/aws"
+  version = "0.0.0"
 
   domain_name = "example.com"
   tags = {
-    Environment = "Dev"
+    Environment = "Development"
     Project     = "project-name"
   }
 }
 ```
+### 
+
+### Future Updates
+
+- Optional parameter to add CORS Configuration
 
 ## Developer Resources
 

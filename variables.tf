@@ -2,8 +2,11 @@
 
 variable "tags" {
   type = map(string)
+  default = {
+    Terraform = "True"
+  }
 }
 
 variable "domain_name" {
-  type    = string
+  type = string
 }
