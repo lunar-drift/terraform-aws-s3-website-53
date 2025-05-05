@@ -7,7 +7,7 @@ data "aws_route53_zone" "selected" {
 
 # Create Bucket and Attach necessary Permissions.
 module "s3_bucket" {
-  source      = "./storages"
+  source      = "./bucket"
   bucket_name = var.domain_name
   tags        = var.tags
 }
