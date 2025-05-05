@@ -16,5 +16,3 @@ tests:
 #      TF_VAR_bucket_name: s3-static-website-test-56471
   - name: example-main
     project_root: examples/main
-    environment:
-      TF_VAR_domain_name: geotorus.org

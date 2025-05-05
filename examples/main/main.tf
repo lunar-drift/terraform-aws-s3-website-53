@@ -11,9 +11,9 @@ provider "aws" {
   region = "us-east-1"
 }
 
-variable "domain_name" {}
 
 module "s3-static-website" {
   source      = "../../"
-  domain_name = var.domain_name
+  _create_r53_zone = true
+  domain_name = "domain.test"
 }
