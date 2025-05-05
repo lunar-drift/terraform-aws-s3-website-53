@@ -2,7 +2,7 @@
 
 # Get Domain Registry and Put records.
 module "dns" {
-  source  = "spacelift.io/gspider8/dns/aws"
+  source  = "spacelift.io/lunar-drift/dns/aws"
   version = "0.0.14"
 
   domain_name     = var.domain_name
