@@ -10,10 +10,6 @@ test_defaults:
 
 # The set of tests to run to verify your module works correctly
 tests:
-#  - name: storages-submodule I don't need to test this because all cases would be covered with main
-#    project_root: storages
-#    environment:
-#      TF_VAR_bucket_name: s3-static-website-test-56471
   - name: example-main
     project_root: examples/main
     environment:

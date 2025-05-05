@@ -2,7 +2,7 @@
 A terraform module to provide a DNS configuration with Route 53, a bucket to store files in,
 an SSL certificate managed by ACM, and a cloudfront distribution.
 
-Public Repo: https://github.com/gspider8/terraform-aws-s3-website-53
+Public Repo: https://github.com/lunar-drift/terraform-aws-s3-website-53
 
 ### Requirements
 - us-east 1 or else cloudfront / certificate / connect will not work
@@ -13,11 +13,6 @@ Public Repo: https://github.com/gspider8/terraform-aws-s3-website-53
 #### Module Input Variables
 - `domain_name` - Base domain name for hosted zone e.g. 'example.com'.
 - `tags` - Map of key/value pairs to tag certain created items.
-- `dns_records` - Map with all dns records that you would like to add. Optional
-  - `main.name` - record name i.e domain name, subdomain...
-  - `main.type` - record type (A, AAAA, CAA,s3 CNAME, DS, MX, NAPTR, NS, PTR, SOA, SPF, SRV and TXT)
-  - `main.ttl` - record time to live.
-  - `main.records` - record values in a list, i.e. `["10 val1", "20 val2" ]`
 #### Other Variables
 - `_create_r53_zone` - used in testing.
 
@@ -25,13 +20,9 @@ Public Repo: https://github.com/gspider8/terraform-aws-s3-website-53
 ```terraform
 module "s3_website" {
   source  = "spacelift.io/gspider8/s3-website-53/aws"
-  version = "0.0.0"
+  version = "0.1.13"
 
   domain_name = "example.com"
-  tags = {
-    Environment = "Development"
-    Project     = "project-name"
-  }
 }
 ```
 ### Outputs
