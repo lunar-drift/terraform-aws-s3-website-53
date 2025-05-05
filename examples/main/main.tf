@@ -13,7 +13,7 @@ provider "aws" {
 
 
 module "s3-static-website" {
-  source      = "../../"
+  source           = "../../"
   _create_r53_zone = true
-  domain_name = "domain.test"
+  domain_name      = "domain.test"
 }
