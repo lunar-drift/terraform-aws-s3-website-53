@@ -1,17 +1,11 @@
 # --- s3-static-website/main.tf ---
 
-# Get Domain Registry and Put records.
-module "dns" {
-  source  = "spacelift.io/lunar-drift/dns/aws"
-  version = "0.0.16"
-
-  domain_name     = var.domain_name
-  create_r53_zone = var._create_r53_zone
-  tags            = var.tags
-  dns_records     = var.dns_records
+# Get Zone ID for Certificate Use and Adding CloudFront Alias Record
+data "aws_route53_zone" "selected" {
+  name = var.domain_name
 }
 
-# Create Bucket and Attache necessary Permissions.
+# Create Bucket and Attach necessary Permissions.
 module "s3_bucket" {
   source      = "./storages"
   bucket_name = var.domain_name
@@ -50,7 +44,7 @@ resource "aws_route53_record" "certificate_validation" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = module.dns.route53_zone.zone_id
+  zone_id         = data.aws_route53_zone.selected.zone_id
 }
 
 resource "aws_acm_certificate_validation" "main" {
@@ -64,7 +58,7 @@ resource "aws_cloudfront_distribution" "main" {
   default_root_object = "index.html"
   is_ipv6_enabled     = true
   enabled             = true
-  aliases             = [var.domain_name] # geotorus.org
+  aliases             = [var.domain_name]
   tags                = var.tags
 
   origin {
@@ -96,7 +90,7 @@ resource "aws_cloudfront_distribution" "main" {
 
 # Point HTTP Traffic towards the CF Distribution.
 resource "aws_route53_record" "alias" {
-  zone_id = module.dns.route53_zone.zone_id
+  zone_id = data.aws_route53_zone.selected.zone_id
   name    = var.domain_name
   type    = "A"
 
