@@ -24,8 +24,8 @@ Public Repo: https://github.com/gspider8/terraform-aws-s3-website-53
 ### Usage
 ```terraform
 module "s3_website" {
-  source  = "spacelift.io/gspider8/s3-website-53/aws"
-  version = "0.0.0"
+  source  = "spacelift.io/lunar-drift/static-s3-website/aws"
+  version = "0.1.3"
 
   domain_name = "example.com"
   tags = {
