@@ -2,8 +2,8 @@
 
 # Get Domain Registry and Put records.
 module "dns" {
-  source  = "spacelift.io/gspider8/dns/aws"
-  version = "0.0.14"
+  source  = "spacelift.io/lunar-drift/dns/aws"
+  version = "0.0.16"
 
   domain_name     = var.domain_name
   create_r53_zone = var._create_r53_zone
