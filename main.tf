@@ -1,7 +1,7 @@
 # --- s3-static-website/main.tf ---
 
 locals {
-  host_domain = split(".", var.domain_name)[-2] + "." + split(".", var.domain_name)[-1]
+  host_domain = format("%s.%s", split(".", var.domain_name)[-2], split(".", var.domain_name)[-1])
 }
 
 # Get Zone ID for Certificate Use and Adding CloudFront Alias Record
