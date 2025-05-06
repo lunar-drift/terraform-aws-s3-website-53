@@ -11,6 +11,7 @@ Public Repo: https://github.com/lunar-drift/terraform-aws-s3-website-53
 ### Variables
 #### Module Input Variables
 - `domain_name` - Base domain name for hosted zone e.g. 'example.com'.
+- `hosted_zone_name` - Name of hosted zone that `domain_name` is within.
 - `tags` - Optional. Map of key/value pairs to tag certain created items.
 
 ### Usage
@@ -19,7 +20,8 @@ module "s3_website" {
   source  = "spacelift.io/gspider8/s3-website-53/aws"
   version = "0.1.14"
 
-  domain_name = "example.com"
+  hosted_zone_name = "example.com"
+  domain_name      = "example.com"
 }
 ```
 ### Outputs

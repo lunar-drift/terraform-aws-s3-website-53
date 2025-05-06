@@ -13,8 +13,10 @@ tests:
   - name: example-main
     project_root: examples/main
     environment:
+      TF_VAR_hosted_zone_name: geotorus.org
       TF_VAR_domain_name: geotorus.org
   - name: subdomain-example-main
     project_root: examples/main
     environment:
+      TF_VAR_hosted_zone_name: geotorus.org
       TF_VAR_domain_name: www.geotorus.org
