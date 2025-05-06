@@ -3,7 +3,7 @@
 variable "tags" {
   description = "Map of key/value pairs to tag certain created items."
   type        = map(string)
-  default = {}
+  default     = {}
 }
 
 variable "domain_name" {
