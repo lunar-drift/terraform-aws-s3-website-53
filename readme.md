@@ -8,19 +8,16 @@ Public Repo: https://github.com/lunar-drift/terraform-aws-s3-website-53
 - us-east 1 or else cloudfront / certificate / connect will not work
 - Route 53 Zone already created
 
-
 ### Variables
 #### Module Input Variables
 - `domain_name` - Base domain name for hosted zone e.g. 'example.com'.
-- `tags` - Map of key/value pairs to tag certain created items.
-#### Other Variables
-- `_create_r53_zone` - used in testing.
+- `tags` - Optional. Map of key/value pairs to tag certain created items.
 
 ### Usage
 ```terraform
 module "s3_website" {
   source  = "spacelift.io/gspider8/s3-website-53/aws"
-  version = "0.1.13"
+  version = "0.1.14"
 
   domain_name = "example.com"
 }
