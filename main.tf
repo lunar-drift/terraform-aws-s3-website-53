@@ -2,7 +2,7 @@
 
 # Get Zone ID for Certificate Use and Adding CloudFront Alias Record
 data "aws_route53_zone" "selected" {
-  name = var.domain_name
+  name = slice(split(".", var.domain_name), -2, -1) // Select TLD and ignore subdomains.
 }
 
 # Create Bucket and Attach necessary Permissions.
