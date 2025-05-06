@@ -1,13 +1,8 @@
 # --- s3-static-website/main.tf ---
 
-locals {
-  host_domain = format("%s.%s", split(".", var.domain_name)[-2], split(".", var.domain_name)[-1])
-}
-
 # Get Zone ID for Certificate Use and Adding CloudFront Alias Record
 data "aws_route53_zone" "selected" {
-  // Select TLD and ignore subdomains.
-  name = local.host_domain
+  name = var.hosted_zone_name
 }
 
 # Create Bucket and Attach necessary Permissions.

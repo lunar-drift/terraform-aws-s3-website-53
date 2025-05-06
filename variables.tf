@@ -10,3 +10,8 @@ variable "domain_name" {
   description = "Base domain name for hosted zone e.g. 'example.com'."
   type        = string
 }
+
+variable "hosted_zone_name" {
+  description = "Name of hosted zone that domain_name is within."
+  type        = string
+}

@@ -12,8 +12,10 @@ provider "aws" {
 }
 
 variable "domain_name" {}
+variable "hosted_zone_name" {}
 
-module "s3-static-website" {
-  source      = "../../"
-  domain_name = var.domain_name
+module "test-static-s3-website" {
+  source           = "../../"
+  domain_name      = var.domain_name
+  hosted_zone_name = var.hosted_zone_name
 }
