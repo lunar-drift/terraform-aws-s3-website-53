@@ -3,9 +3,7 @@
 variable "tags" {
   description = "Map of key/value pairs to tag certain created items."
   type        = map(string)
-  default = {
-    Terraform = "True"
-  }
+  default     = {}
 }
 
 variable "domain_name" {
@@ -13,16 +11,7 @@ variable "domain_name" {
   type        = string
 }
 
-variable "dns_records" {
-  description = "For each record in main, include name, type, ttl, & records"
-  type        = map(any)
-  default     = { main = {} }
-}
-
-# --- DevOps ---
-
-variable "_create_r53_zone" {
-  description = "Used in testing to create r53 zones"
-  default     = false
-  type        = bool
+variable "hosted_zone_name" {
+  description = "Name of hosted zone that domain_name is within."
+  type        = string
 }
