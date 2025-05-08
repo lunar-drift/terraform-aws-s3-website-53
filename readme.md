@@ -13,6 +13,7 @@ Public Repo: https://github.com/lunar-drift/terraform-aws-s3-website-53
 - `domain_name` - Base domain name for hosted zone e.g. 'example.com'.
 - `hosted_zone_name` - Name of hosted zone that `domain_name` is within.
 - `tags` - Optional. Map of key/value pairs to tag certain created items.
+- `point_www_to_apex` - Optional. [boolean] If true, creates a record to point www traffic to apex domain.
 
 ### Usage
 ```terraform
