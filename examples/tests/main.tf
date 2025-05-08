@@ -18,6 +18,8 @@ variable "www_redirect" { default = 0 }
 module "test-static-s3-website" {
   source            = "../../"
   domain_name       = var.domain_name
-  hosted_zone_name  = var.hosted_zone_name
-  point_www_to_apex = var.www_redirect == 1
+
+
+  # Booleans
+  www_resolves_to_apex = var.www_redirect
 }

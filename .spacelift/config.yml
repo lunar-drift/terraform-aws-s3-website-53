@@ -1,23 +1,28 @@
-# The version of the configuration file format
-version: 1
-# Your module version - must be changed to release a new version
-module_version: 0.1.15
+version: 1 # format of this configuration file
 
-# Any default settings that should be used for all test cases
+module_version: 0.1.90
+
 test_defaults:
   terraform_version: 1.5.7
   before_init: ["terraform fmt -check"]
 
-# The set of tests to run to verify your module works correctly
 tests:
-  - name: example-main
-    project_root: examples/main
+  - name: test-all-features
+    project_root: examples/tests
     environment:
-      TF_VAR_hosted_zone_name: geotorus.org
-      TF_VAR_domain_name: geotorus.org
-  - name: subdomain-example-main
-    project_root: examples/main
+      TF_VAR_apex_domain: geotorus.org
+
+  - name: test-all-features-and-subdomain
+    project_root: examples/tests
     environment:
-      TF_VAR_hosted_zone_name: geotorus.org
-      TF_VAR_domain_name: www.geotorus.org
-      TF_VAR_www_redirect: 1
+      TF_VAR_apex_domain: geotorus.org
+      TF_VAR_subdomain: accounts
+
+  - name: test-no-cloudfront
+    project_root: examples/tests
+    environment:
+      TF_VAR_apex_domain: geotorus.org
+      TF_VAR_cf_dist: 0
+
+  - name: test-www-redirect
+    project_root: examples/tests
