@@ -20,3 +20,4 @@ tests:
     environment:
       TF_VAR_hosted_zone_name: geotorus.org
       TF_VAR_domain_name: www.geotorus.org
+      TF_VAR_www_redirect: 1

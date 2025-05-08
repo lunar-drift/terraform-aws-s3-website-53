@@ -18,5 +18,5 @@ variable "hosted_zone_name" {
 
 variable "point_www_to_apex" {
   description = "Option to add a CNAME record to the WWW subdomain to point to the apex."
-  default = false
+  default     = false
 }
