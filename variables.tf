@@ -15,3 +15,8 @@ variable "hosted_zone_name" {
   description = "Name of hosted zone that domain_name is within."
   type        = string
 }
+
+variable "point_www_to_apex" {
+  description = "Option to add a CNAME record to the WWW subdomain to point to the apex."
+  default     = false
+}

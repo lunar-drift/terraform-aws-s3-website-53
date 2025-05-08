@@ -13,9 +13,11 @@ provider "aws" {
 
 variable "domain_name" {}
 variable "hosted_zone_name" {}
+variable "www_redirect" { default = 0 }
 
 module "test-static-s3-website" {
-  source           = "../../"
-  domain_name      = var.domain_name
-  hosted_zone_name = var.hosted_zone_name
+  source            = "../../"
+  domain_name       = var.domain_name
+  hosted_zone_name  = var.hosted_zone_name
+  point_www_to_apex = var.www_redirect == 1
 }

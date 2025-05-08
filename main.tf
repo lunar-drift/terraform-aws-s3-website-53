@@ -103,3 +103,14 @@ resource "aws_route53_record" "alias" {
     aws_cloudfront_distribution.main
   ]
 }
+
+# Redirect HTTP Traffic from www subdomain to apex domain.
+resource "aws_route53_record" "www" {
+  count = var.point_www_to_apex ? 1 : 0
+
+  zone_id = data.aws_route53_zone.selected.zone_id
+  name    = "www.${var.hosted_zone_name}"
+  type    = "CNAME"
+  ttl     = "300"
+  records = [var.hosted_zone_name]
+}
