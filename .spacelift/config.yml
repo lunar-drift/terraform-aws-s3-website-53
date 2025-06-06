@@ -12,6 +12,12 @@ tests:
     environment:
       TF_VAR_apex_domain: geotorus.org
 
+  - name: test-www-redirect
+    project_root: examples/tests
+    environment:
+      TF_VAR_apex_domain: geotorus.org
+      TF_VAR_www_resolves_to_apex: 1
+
   - name: test-all-features-and-subdomain
     project_root: examples/tests
     environment:
@@ -23,6 +29,3 @@ tests:
     environment:
       TF_VAR_apex_domain: geotorus.org
       TF_VAR_cf_dist: 0
-
-  - name: test-www-redirect
-    project_root: examples/tests

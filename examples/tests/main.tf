@@ -11,15 +11,14 @@ provider "aws" {
   region = "us-east-1"
 }
 
-variable "domain_name" {}
-variable "hosted_zone_name" {}
-variable "www_redirect" { default = 0 }
+variable "apex_domain" {}
+variable "www_resolves_to_apex" { default = 0 }
 
 module "test-static-s3-website" {
   source      = "../../"
-  domain_name = var.domain_name
+  apex_domain = var.apex_domain
 
 
   # Booleans
-  www_resolves_to_apex = var.www_redirect
+  www_resolves_to_apex = var.www_resolves_to_apex
 }
