@@ -57,6 +57,13 @@ resource "aws_cloudfront_distribution" "main" {
   is_ipv6_enabled     = true
   enabled             = true
   aliases             = [var.apex_domain]
+  
+  custom_error_response = [
+    {
+      error_code = 404
+      response_page_path = "/error.html"
+    }
+  ]
 
   origin {
     domain_name = module.s3_bucket.bucket.bucket_regional_domain_name
