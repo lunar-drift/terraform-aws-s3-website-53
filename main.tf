@@ -58,12 +58,19 @@ resource "aws_cloudfront_distribution" "main" {
   enabled             = true
   aliases             = [var.apex_domain]
 
-  custom_error_response = [
-    {
-      error_code         = 404
-      response_page_path = "/error.html"
-    }
-  ]
+  custom_error_response {
+    error_caching_min_ttl = 10
+    error_code            = 403
+    response_code         = 200
+    response_page_path    = "/index.html"
+  }
+  custom_error_response {
+    error_caching_min_ttl = 10
+    error_code            = 404
+    response_code         = 304
+    response_page_path    = "/error.html"
+  }
+
 
   origin {
     domain_name = module.s3_bucket.bucket.bucket_regional_domain_name
