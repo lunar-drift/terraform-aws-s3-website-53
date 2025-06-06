@@ -1,5 +1,3 @@
-# --- s3-website-53.storages.outputs ---
-
 output "bucket" {
   value = aws_s3_bucket.main
 }

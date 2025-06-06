@@ -1,3 +1,16 @@
+remove hosted_zone_name
+- add in `subdomain` variable, defaulting to 0
+- add in `cf_dist`, defaulting to 1
+- subdomain and point_www_to_apex cannot both resolve true
+  - add this in as a test case with no cloudfront distribution
+
+tests
+  test_cf_d
+  test_subdomain_www_redirect_incompatability.
+    cf_dist = 0
+  subdomain = "fwd"
+
+
 # S3 Static Website w/SSL
 A terraform module to provide a DNS configuration with Route 53, a bucket to store files in,
 an SSL certificate managed by ACM, and a cloudfront distribution.
@@ -10,10 +23,8 @@ Public Repo: https://github.com/lunar-drift/terraform-aws-s3-website-53
 
 ### Variables
 #### Module Input Variables
-- `domain_name` - Base domain name for hosted zone e.g. 'example.com'.
-- `hosted_zone_name` - Name of hosted zone that `domain_name` is within.
-- `tags` - Optional. Map of key/value pairs to tag certain created items.
-- `point_www_to_apex` - Optional. [boolean] If true, creates a record to point www traffic to apex domain.
+- `apex_domain` - Apex domain name for hosted zone e.g. 'example.com'.
+- `point_www_to_apex` - Optional. [0/1] If true, creates a record to point www traffic to apex domain.
 
 ### Usage
 ```terraform
