@@ -14,7 +14,7 @@ resource "aws_s3_bucket_website_configuration" "hosting" {
   bucket = module.s3_bucket.bucket.id
   index_document { suffix = "index.html" }
   error_document { key = "error.html" }
-  
+
 }
 
 # Create SSL Certificate
@@ -57,10 +57,10 @@ resource "aws_cloudfront_distribution" "main" {
   is_ipv6_enabled     = true
   enabled             = true
   aliases             = [var.apex_domain]
-  
+
   custom_error_response = [
     {
-      error_code = 404
+      error_code         = 404
       response_page_path = "/error.html"
     }
   ]

@@ -16,8 +16,8 @@ variable "hosted_zone_name" {}
 variable "www_redirect" { default = 0 }
 
 module "test-static-s3-website" {
-  source            = "../../"
-  domain_name       = var.domain_name
+  source      = "../../"
+  domain_name = var.domain_name
 
 
   # Booleans
