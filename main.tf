@@ -1,15 +1,12 @@
-# --- s3-static-website/main.tf ---
-
 # Get Zone ID for Certificate Use and Adding CloudFront Alias Record
 data "aws_route53_zone" "selected" {
-  name = var.hosted_zone_name
+  name = var.apex_domain
 }
 
 # Create Bucket and Attach necessary Permissions.
 module "s3_bucket" {
   source      = "./bucket"
-  bucket_name = var.domain_name
-  tags        = var.tags
+  bucket_name = var.apex_domain
 }
 
 # Create Bucket Website Configuration
@@ -17,12 +14,13 @@ resource "aws_s3_bucket_website_configuration" "hosting" {
   bucket = module.s3_bucket.bucket.id
   index_document { suffix = "index.html" }
   error_document { key = "error.html" }
+  
 }
 
 # Create SSL Certificate
 resource "aws_acm_certificate" "main" {
-  domain_name               = var.domain_name
-  subject_alternative_names = ["*.${var.domain_name}"]
+  domain_name               = var.apex_domain
+  subject_alternative_names = ["*.${var.apex_domain}"]
   validation_method         = "DNS"
   lifecycle {
     create_before_destroy = true
@@ -58,8 +56,7 @@ resource "aws_cloudfront_distribution" "main" {
   default_root_object = "index.html"
   is_ipv6_enabled     = true
   enabled             = true
-  aliases             = [var.domain_name]
-  tags                = var.tags
+  aliases             = [var.apex_domain]
 
   origin {
     domain_name = module.s3_bucket.bucket.bucket_regional_domain_name
@@ -91,7 +88,7 @@ resource "aws_cloudfront_distribution" "main" {
 # Point HTTP Traffic towards the CF Distribution.
 resource "aws_route53_record" "alias" {
   zone_id = data.aws_route53_zone.selected.zone_id
-  name    = var.domain_name
+  name    = var.apex_domain
   type    = "A"
 
   alias {
@@ -102,15 +99,4 @@ resource "aws_route53_record" "alias" {
   depends_on = [
     aws_cloudfront_distribution.main
   ]
-}
-
-# Redirect HTTP Traffic from www subdomain to apex domain.
-resource "aws_route53_record" "www" {
-  count = var.point_www_to_apex ? 1 : 0
-
-  zone_id = data.aws_route53_zone.selected.zone_id
-  name    = "www.${var.hosted_zone_name}"
-  type    = "CNAME"
-  ttl     = "300"
-  records = [var.hosted_zone_name]
 }

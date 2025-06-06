@@ -15,5 +15,5 @@ module "static-s3-website" {
   source            = "../../"
   # Required inputs
   apex_domain       = "webdatabasesolutions.com"
-  point_www_to_apex = true
+  point_www_to_apex = 1
 }
