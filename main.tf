@@ -56,8 +56,9 @@ resource "aws_cloudfront_distribution" "main" {
   default_root_object = "index.html"
   is_ipv6_enabled     = true
   enabled             = true
-  aliases             = [var.apex_domain]
-
+  aliases             = var.cloudfront.cf_aliases
+  # Allowable response codes https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/custom-error-pages-response-code.html
+  # These are errors anyway and need to be seen in production.
   custom_error_response {
     error_caching_min_ttl = 10
     error_code            = 403
@@ -67,7 +68,7 @@ resource "aws_cloudfront_distribution" "main" {
   custom_error_response {
     error_caching_min_ttl = 10
     error_code            = 404
-    response_code         = 304
+    response_code         = 200
     response_page_path    = "/error.html"
   }
 
@@ -93,14 +94,14 @@ resource "aws_cloudfront_distribution" "main" {
 
   restrictions {
     geo_restriction {
-      restriction_type = "whitelist"
-      locations        = ["US", "CA", "GB", "DE"]
+      restriction_type = var.cloudfront.cf_geo_restriction_type
+      locations        = var.cloudfront.cf_geo_restriction_locations
     }
   }
 }
 
-# Point HTTP Traffic towards the CF Distribution.
-resource "aws_route53_record" "alias" {
+# Point web traffic from apex_domain towards the CF Distribution.
+resource "aws_route53_record" "apex_alias" {
   zone_id = data.aws_route53_zone.selected.zone_id
   name    = var.apex_domain
   type    = "A"
@@ -109,6 +110,23 @@ resource "aws_route53_record" "alias" {
     name                   = aws_cloudfront_distribution.main.domain_name
     zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
     evaluate_target_health = true
+  }
+  depends_on = [
+    aws_cloudfront_distribution.main
+  ]
+}
+
+# Point HTTP Traffic from www subdomain towards the CF Distribution.
+resource "aws_route53_record" "www_alias" {
+  count   = var.use_www
+  zone_id = data.aws_route53_zone.selected.zone_id
+  name    = "www.${var.apex_domain}"
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.main.domain_name
+    zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
+    evaluate_target_health = false
   }
   depends_on = [
     aws_cloudfront_distribution.main

@@ -14,6 +14,11 @@ provider "aws" {
 module "static-s3-website" {
   source = "../../"
   # Required inputs
-  apex_domain       = "webdatabasesolutions.com"
-  point_www_to_apex = 1
+  apex_domain = "geotorus.com"
+  use_www     = 1
+  cloudfront = {
+    cf_aliases                   = ["geotorus.com", "www.geotorus.com"]
+    cf_geo_restriction_type      = "none"
+    cf_geo_restriction_locations = []
+  }
 }
