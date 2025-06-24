@@ -1,13 +1,13 @@
 version: 1 # format of this configuration file
 
-module_version: 0.1.91
+module_version: 0.2.0
 
 test_defaults:
   terraform_version: 1.5.7
   before_init: ["terraform fmt -check"]
 
 tests:
-  - name: test-all-features
+  - name: build-test
     project_root: examples/simple-website
 
   # - name: test-all-features-and-subdomain
