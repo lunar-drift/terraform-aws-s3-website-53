@@ -9,11 +9,10 @@ terraform {
 
 provider "aws" {
   region = "us-east-1"
-}
+  }
 
 module "static-s3-website" {
-  source = "../../"
-  # Required inputs
+  source      = "../../"
   apex_domain = "geotorus.com"
   use_www     = 1
   cloudfront = {
@@ -21,4 +20,12 @@ module "static-s3-website" {
     cf_geo_restriction_type      = "none"
     cf_geo_restriction_locations = []
   }
+}
+
+# Upload index.html to bucket
+resource "aws_s3_object" "object" {
+  bucket       = "geotorus.com"
+  key          = "index.html"
+  source       = "./index.html"
+  content_type = "text/html"
 }
