@@ -27,5 +27,5 @@ output "cloudfront_distribution" {
 }
 
 output "route53_record" {
-  value = aws_route53_record.alias
+  value = aws_route53_record.apex_alias
 }

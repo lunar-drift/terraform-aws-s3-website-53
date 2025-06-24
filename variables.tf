@@ -1,22 +1,23 @@
-# --- s3-static-website/variables.tf ---
-
-variable "tags" {
-  description = "Map of key/value pairs to tag certain created items."
-  type        = map(string)
-  default     = {}
-}
-
-variable "domain_name" {
-  description = "Base domain name for hosted zone e.g. 'example.com'."
+variable "apex_domain" {
+  description = "Apex Domain for web endpoint."
   type        = string
+  default     = "value"
 }
 
-variable "hosted_zone_name" {
-  description = "Name of hosted zone that domain_name is within."
-  type        = string
+variable "cloudfront" {
+  type = object({
+    cf_aliases                   = list(any) #string
+    cf_geo_restriction_locations = list(string)
+    cf_geo_restriction_type      = string
+  })
+  # validation: cf_aliases contain legal domain and subdomain names.
+  #             cf_geo_restriction_locations values are legal countries, or is empty if none.
+  #             cf_geo_restriction_type is whitelist, blacklist or none.
 }
 
-variable "point_www_to_apex" {
-  description = "Option to add a CNAME record to the WWW subdomain to point to the apex."
-  default     = false
+variable "use_www" {
+  description = "Option that creates a DNS record that points the www domain to the CloudFront Distribution."
+  type        = number
+  default     = 0
+  # validation: www.apex is within the cloudfront.cf_aliases list.
 }

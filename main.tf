@@ -1,15 +1,12 @@
-# --- s3-static-website/main.tf ---
-
 # Get Zone ID for Certificate Use and Adding CloudFront Alias Record
 data "aws_route53_zone" "selected" {
-  name = var.hosted_zone_name
+  name = var.apex_domain
 }
 
 # Create Bucket and Attach necessary Permissions.
 module "s3_bucket" {
   source      = "./bucket"
-  bucket_name = var.domain_name
-  tags        = var.tags
+  bucket_name = var.apex_domain
 }
 
 # Create Bucket Website Configuration
@@ -17,12 +14,13 @@ resource "aws_s3_bucket_website_configuration" "hosting" {
   bucket = module.s3_bucket.bucket.id
   index_document { suffix = "index.html" }
   error_document { key = "error.html" }
+
 }
 
 # Create SSL Certificate
 resource "aws_acm_certificate" "main" {
-  domain_name               = var.domain_name
-  subject_alternative_names = ["*.${var.domain_name}"]
+  domain_name               = var.apex_domain
+  subject_alternative_names = ["*.${var.apex_domain}"]
   validation_method         = "DNS"
   lifecycle {
     create_before_destroy = true
@@ -58,8 +56,22 @@ resource "aws_cloudfront_distribution" "main" {
   default_root_object = "index.html"
   is_ipv6_enabled     = true
   enabled             = true
-  aliases             = [var.domain_name]
-  tags                = var.tags
+  aliases             = var.cloudfront.cf_aliases
+  # Allowable response codes https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/custom-error-pages-response-code.html
+  # These are errors anyway and need to be seen in production.
+  custom_error_response {
+    error_caching_min_ttl = 10
+    error_code            = 403
+    response_code         = 200
+    response_page_path    = "/index.html"
+  }
+  custom_error_response {
+    error_caching_min_ttl = 10
+    error_code            = 404
+    response_code         = 200
+    response_page_path    = "/error.html"
+  }
+
 
   origin {
     domain_name = module.s3_bucket.bucket.bucket_regional_domain_name
@@ -82,16 +94,16 @@ resource "aws_cloudfront_distribution" "main" {
 
   restrictions {
     geo_restriction {
-      restriction_type = "whitelist"
-      locations        = ["US", "CA", "GB", "DE"]
+      restriction_type = var.cloudfront.cf_geo_restriction_type
+      locations        = var.cloudfront.cf_geo_restriction_locations
     }
   }
 }
 
-# Point HTTP Traffic towards the CF Distribution.
-resource "aws_route53_record" "alias" {
+# Point web traffic from apex_domain towards the CF Distribution.
+resource "aws_route53_record" "apex_alias" {
   zone_id = data.aws_route53_zone.selected.zone_id
-  name    = var.domain_name
+  name    = var.apex_domain
   type    = "A"
 
   alias {
@@ -104,13 +116,19 @@ resource "aws_route53_record" "alias" {
   ]
 }
 
-# Redirect HTTP Traffic from www subdomain to apex domain.
-resource "aws_route53_record" "www" {
-  count = var.point_www_to_apex ? 1 : 0
-
+# Point HTTP Traffic from www subdomain towards the CF Distribution.
+resource "aws_route53_record" "www_alias" {
+  count   = var.use_www
   zone_id = data.aws_route53_zone.selected.zone_id
-  name    = "www.${var.hosted_zone_name}"
-  type    = "CNAME"
-  ttl     = "300"
-  records = [var.hosted_zone_name]
+  name    = "www.${var.apex_domain}"
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.main.domain_name
+    zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
+    evaluate_target_health = false
+  }
+  depends_on = [
+    aws_cloudfront_distribution.main
+  ]
 }
