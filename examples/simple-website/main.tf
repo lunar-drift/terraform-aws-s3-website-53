@@ -24,7 +24,7 @@ module "static-s3-website" {
 
 # Upload index.html to bucket
 resource "aws_s3_object" "object" {
-  bucket       = "geotorus.com"
+  bucket       = module.static-s3-website.bucket.id
   key          = "index.html"
   source       = "./index.html"
   content_type = "text/html"
