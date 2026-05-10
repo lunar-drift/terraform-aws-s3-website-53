@@ -1,6 +1,6 @@
 version: 1 # format of this configuration file
 
-module_version: 0.2.0
+module_version: 1.0.0
 
 test_defaults:
   terraform_version: 1.5.7
@@ -9,15 +9,3 @@ test_defaults:
 tests:
   - name: build-test
     project_root: examples/simple-website
-
-  # - name: test-all-features-and-subdomain
-  #   project_root: examples/tests
-  #   environment:
-  #     TF_VAR_apex_domain: geotorus.org
-  #     TF_VAR_subdomain: accounts
-
-  # - name: test-no-cloudfront
-  #   project_root: examples/tests
-  #   environment:
-  #     TF_VAR_apex_domain: geotorus.org
-  #     TF_VAR_cf_dist: 0

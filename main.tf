@@ -1,23 +1,45 @@
-# Get Zone ID for Certificate Use and Adding CloudFront Alias Record
 data "aws_route53_zone" "selected" {
   name = var.apex_domain
 }
 
-# Create Bucket and Attach necessary Permissions.
-module "s3_bucket" {
-  source      = "./bucket"
-  bucket_name = var.apex_domain
+resource "aws_s3_bucket" "main" {
+  bucket = var.apex_domain
+
+  tags = {
+    Client      = var.client_name
+    ManagedBy   = "terraform"
+    Environment = var.environment
+  }
 }
 
-# Create Bucket Website Configuration
-resource "aws_s3_bucket_website_configuration" "hosting" {
-  bucket = module.s3_bucket.bucket.id
-  index_document { suffix = "index.html" }
-  error_document { key = "error.html" }
-
+resource "aws_s3_bucket_versioning" "main" {
+  bucket = aws_s3_bucket.main.id
+  versioning_configuration {
+    status = "Enabled"
+  }
 }
 
-# Create SSL Certificate
+resource "aws_s3_bucket_public_access_block" "main" {
+  bucket                  = aws_s3_bucket.main.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_policy" "main" {
+  bucket     = aws_s3_bucket.main.id
+  policy     = data.aws_iam_policy_document.bucket_policy.json
+  depends_on = [aws_s3_bucket_public_access_block.main]
+}
+
+resource "aws_cloudfront_origin_access_control" "main" {
+  name                              = var.apex_domain
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
 resource "aws_acm_certificate" "main" {
   domain_name               = var.apex_domain
   subject_alternative_names = ["*.${var.apex_domain}"]
@@ -27,7 +49,6 @@ resource "aws_acm_certificate" "main" {
   }
 }
 
-# Validate Ownership of Domain through DNS
 resource "aws_route53_record" "certificate_validation" {
   for_each = {
     for dvo in aws_acm_certificate.main.domain_validation_options : dvo.domain_name => {
@@ -50,57 +71,56 @@ resource "aws_acm_certificate_validation" "main" {
   validation_record_fqdns = [for record in aws_route53_record.certificate_validation : record.fqdn]
 }
 
-# Create a CloudFront Distribution.
 resource "aws_cloudfront_distribution" "main" {
   depends_on          = [aws_acm_certificate_validation.main]
-  default_root_object = "index.html"
-  is_ipv6_enabled     = true
   enabled             = true
-  aliases             = var.cloudfront.cf_aliases
-  # Allowable response codes https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/custom-error-pages-response-code.html
-  # These are errors anyway and need to be seen in production.
-  custom_error_response {
-    error_caching_min_ttl = 10
-    error_code            = 403
-    response_code         = 200
-    response_page_path    = "/index.html"
-  }
-  custom_error_response {
-    error_caching_min_ttl = 10
-    error_code            = 404
-    response_code         = 200
-    response_page_path    = "/error.html"
-  }
+  is_ipv6_enabled     = true
+  default_root_object = "index.html"
+  aliases             = var.cf_aliases
+  price_class         = "PriceClass_All"
 
+  tags = {
+    Client      = var.client_name
+    ManagedBy   = "terraform"
+    Environment = var.environment
+  }
 
   origin {
-    domain_name = module.s3_bucket.bucket.bucket_regional_domain_name
-    origin_id   = module.s3_bucket.bucket.bucket_regional_domain_name
+    domain_name              = aws_s3_bucket.main.bucket_regional_domain_name
+    origin_id                = var.apex_domain
+    origin_access_control_id = aws_cloudfront_origin_access_control.main.id
   }
 
   default_cache_behavior {
-    cache_policy_id        = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+    cache_policy_id        = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
     viewer_protocol_policy = "redirect-to-https"
     compress               = true
-    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = module.s3_bucket.bucket.bucket_regional_domain_name
-  }
-
-  viewer_certificate {
-    acm_certificate_arn = aws_acm_certificate.main.arn
-    ssl_support_method  = "sni-only"
+    allowed_methods        = var.cf_allowed_methods
+    cached_methods         = var.cf_cached_methods
+    target_origin_id       = var.apex_domain
   }
 
   restrictions {
     geo_restriction {
-      restriction_type = var.cloudfront.cf_geo_restriction_type
-      locations        = var.cloudfront.cf_geo_restriction_locations
+      restriction_type = length(var.cf_restricted_locations) > 0 ? "blacklist" : "none"
+      locations        = var.cf_restricted_locations
     }
+  }
+
+  viewer_certificate {
+    acm_certificate_arn      = aws_acm_certificate.main.arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
+  }
+
+  custom_error_response {
+    error_caching_min_ttl = 86400
+    error_code            = 404
+    response_code         = 200
+    response_page_path    = "/error.html"
   }
 }
 
-# Point web traffic from apex_domain towards the CF Distribution.
 resource "aws_route53_record" "apex_alias" {
   zone_id = data.aws_route53_zone.selected.zone_id
   name    = var.apex_domain
@@ -111,12 +131,8 @@ resource "aws_route53_record" "apex_alias" {
     zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
     evaluate_target_health = true
   }
-  depends_on = [
-    aws_cloudfront_distribution.main
-  ]
 }
 
-# Point HTTP Traffic from www subdomain towards the CF Distribution.
 resource "aws_route53_record" "www_alias" {
   count   = var.use_www
   zone_id = data.aws_route53_zone.selected.zone_id
@@ -128,7 +144,4 @@ resource "aws_route53_record" "www_alias" {
     zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
     evaluate_target_health = false
   }
-  depends_on = [
-    aws_cloudfront_distribution.main
-  ]
 }
