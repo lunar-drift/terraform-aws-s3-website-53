@@ -1,22 +1,20 @@
-# S3 Static Website w/SSL for a client
+# S3 Static Website w/SSL 
 
-One handy OpenTofu module providing a private S3 origin, CloudFront distribution with Origin Access Control (OAC), ACM certificate, and Route 53 alias records for a static website all within the AWS free tier.
-
+A handy OpenTofu module providing a private S3 origin, CloudFront distribution with Origin Access Control (OAC), ACM certificate, and Route 53 alias records for a static website all within the AWS free tier.
 
 Public Repo: https://github.com/lunar-drift/terraform-aws-s3-website-53
 
 ### Requirements
 - Provider must be configured for `us-east-1` (CloudFront requires ACM certificates in us-east-1)
-- Route 53 hosted zone must already exist for `apex_domain`
+- You must already own a domain name that you would like to use. 
 - Manual intervention required to activate CloudFront Fixed Rate Plans [more on fixed rate plans]()
 
 ### Variables
 
-| Name                      | Type           | Default                                      | Description                                                                        |
+| Name                      | Type           | Example                                      | Description                                                                        |
 |---------------------------|----------------|----------------------------------------------|------------------------------------------------------------------------------------|
-| `apex_domain`             | `string`       | -                                            | Apex domain name for the hosted zone and S3 bucket                                 |
+| `web_domain`              | `string`       | `google.com.`                                | Apex domain name that the site will be accessible from with trailing `.`.          |
 | `cf_aliases`              | `list(string)` | -                                            | CloudFront distribution aliases (domain names)                                     |
-| `use_www`                 | `number`       | `0`                                          | Set to `1` to create a `www.` Route 53 alias record                                |
 | `cf_restricted_locations` | `list(string)` | `[]`                                         | ISO 3166-1 alpha-2 country codes to blacklist; empty list disables geo-restriction |
 | `cf_allowed_methods`      | `list(string)` | `["GET", "HEAD"]`                            | HTTP methods CloudFront forwards to the origin                                     |
 | `cf_cached_methods`       | `list(string)` | `["GET", "HEAD"]`                            | HTTP methods CloudFront caches responses for                                       |
@@ -25,9 +23,27 @@ Public Repo: https://github.com/lunar-drift/terraform-aws-s3-website-53
 | `data_access_arn`         | `string`       | `"arn:aws:iam::<aws_acct>:role/<role_name>"` | IAM role ARN granted read/write/delete on the origin bucket                        |
 | `resource_access_arn`     | `string`       | `"arn:aws:iam::<aws_acct>:role/<role_name>"` | IAM role ARN granted full access to all created resources.                         |
 
+## Components
+#### CloudFront Distribution
+A CloudFront Distribution is how your website content is accessed by global users. 
+This module takes advantage of the CloudFront Fixed Rate Plan Free Tier and includes the option to include all resources associated with that. 
+
+
+Unless advanced configuration is applied, these resources will also be created:
+- SSL Certificate to allow HTTPS access to site content/distribution.
+- Route53 Hosted Zone (free after activating cloudfront fixed rate plans)
+- S3 Bucket (origin) first 5 GB free with CloudFront Fixed Rate Plan
+
+### DNS Records
+If you would like to use another DNS Provider besides Route53, set the `dns_configuration` variable appropriately, you will
+need to provision the acm certificate outside of this module and add it as an input variable. 
+Additional steps are required to set up your static website that are not supported by this module. 
 ### Usage
-
-
+ATTENTION
+After applying, immediately login to AWS Management Console to activate your Fixed Rate Plan. 
+There is a chance you will be charged $0.50 for your Hosted Zone when creating all resources at once but that will not be 
+a recurring cost if you activate the CloudFront Fixed Rate Plan in the console. 
+See steps here: TODO 
 
 ```terraform
 variable "aws_management_account_number" { 

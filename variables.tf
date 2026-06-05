@@ -1,12 +1,19 @@
-variable "apex_domain" {
+variable "web_domain" {
   description = "Apex domain name for the hosted zone and S3 bucket."
   type        = string
+  # TODO add validation of format *.*.
 }
 
-variable "use_www" {
-  description = "Set to 1 to create a www. Route 53 alias record pointing to the CloudFront distribution."
-  type        = number
-  default     = 0
+variable "cloudfront_configuration" {
+  description = "Object that defines configuration for CloudFront Distribution."
+  default = {}
+  # TODO Configure
+  #  is_cloudfront_fixed_rate_plan
+  #  cached_methods
+  #  allowed_methods
+  #  restricted_locations
+  #  allowed_domains
+  #  origin_bucket_name
 }
 
 variable "cf_aliases" {
@@ -32,10 +39,19 @@ variable "cf_cached_methods" {
   default     = ["GET", "HEAD"]
 }
 
-variable "client_name" {
-  description = "Client identifier applied as a resource tag."
-  type        = string
-  default     = ""
+
+
+variable "dns_configuration" {
+  description = "Object that defines configuration for DNS Records"
+  default = {}
+  # TODO
+  #  use_route_53
+  #  add addt'l records
+}
+
+variable "certificate_configuration" {
+  description = "Object that defines configuration for ACM Certificate Resources"
+  default = {}
 }
 
 variable "environment" {
@@ -44,8 +60,21 @@ variable "environment" {
   default     = "production"
 }
 
-variable "studio_role_arn" {
-  description = "Optional ARN of an IAM role granted read/write/delete access to the origin bucket (e.g. a Lunar Drift Studio deployment role)."
+variable "infrastructure_manager" {
+  description = "Name of service that manages the given infrastructure."
+  # TODO add to global aws tags.
+  default = "tofu-aws-static-website"
+}
+
+variable "content_manager_arn" {
+  # TODO remove null option with logic associated in data.tf
+  description = "ARN of an IAM role granted object write/delete access to the origin bucket (e.g. a Lunar Drift Studio deployment role)."
   type        = string
   default     = null
+}
+
+variable "use_www" {
+  description = "Set to 1 to create a www. Route 53 alias record pointing to the CloudFront distribution."
+  type        = number
+  default     = 0
 }

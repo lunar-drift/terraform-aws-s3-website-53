@@ -9,7 +9,7 @@ data "aws_iam_policy_document" "bucket_policy" {
     }
 
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.main.arn}/*"]
+    resources = ["${aws_s3_bucket.origin.arn}/*"]
 
     condition {
       test     = "StringEquals"
@@ -19,14 +19,14 @@ data "aws_iam_policy_document" "bucket_policy" {
   }
 
   dynamic "statement" {
-    for_each = var.studio_role_arn != null ? [1] : []
+    for_each = var.content_manager_arn != null ? [1] : []
     content {
       sid    = "AllowStudioAccess"
       effect = "Allow"
 
       principals {
         type        = "AWS"
-        identifiers = [var.studio_role_arn]
+        identifiers = [var.content_manager_arn]
       }
 
       actions = [
@@ -37,8 +37,8 @@ data "aws_iam_policy_document" "bucket_policy" {
       ]
 
       resources = [
-        aws_s3_bucket.main.arn,
-        "${aws_s3_bucket.main.arn}/*",
+        aws_s3_bucket.origin.arn,
+        "${aws_s3_bucket.origin.arn}/*",
       ]
     }
   }

@@ -1,48 +1,54 @@
-data "aws_route53_zone" "selected" {
-  name = var.apex_domain
+# MIT Lunar Drift 2025
+# Components:
+# 0. Locals
+# 1. Origin Bucket
+# 2. DNS Zone
+# 3. ACM Certificate
+# 4. CloudFront Distribution
+# 5. WAF Shield (if using fixed rate plan)
+
+# ======== 0. Locals ========
+locals {
+  web_domain = trimsuffix(var.web_domain, ".")
+  origin_id = "${var.web_domain}-${var.infrastructure_manager}"
+
+  origin_bucket_name = local.web_domain
+  cf_allowed_domains = [local.web_domain]
 }
 
-resource "aws_s3_bucket" "main" {
-  bucket = var.apex_domain
-
-  tags = {
-    Client      = var.client_name
-    ManagedBy   = "terraform"
-    Environment = var.environment
-  }
+# ======== 1. Origin Bucket ========
+resource "aws_s3_bucket" "origin" {
+  bucket = local.origin_bucket_name
 }
-
-resource "aws_s3_bucket_versioning" "main" {
-  bucket = aws_s3_bucket.main.id
+resource "aws_s3_bucket_versioning" "origin" {
+  bucket = aws_s3_bucket.origin.id
   versioning_configuration {
     status = "Enabled"
   }
 }
-
-resource "aws_s3_bucket_public_access_block" "main" {
-  bucket                  = aws_s3_bucket.main.id
+resource "aws_s3_bucket_public_access_block" "origin" {
+  bucket                  = aws_s3_bucket.origin.id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
+resource "aws_s3_bucket_policy" "origin" {
+  depends_on = [aws_s3_bucket_public_access_block.origin] # required for errorless creation.
 
-resource "aws_s3_bucket_policy" "main" {
-  bucket     = aws_s3_bucket.main.id
-  policy     = data.aws_iam_policy_document.bucket_policy.json
-  depends_on = [aws_s3_bucket_public_access_block.main]
+  bucket = aws_s3_bucket.origin.id
+  policy = data.aws_iam_policy_document.bucket_policy.json
 }
 
-resource "aws_cloudfront_origin_access_control" "main" {
-  name                              = var.apex_domain
-  origin_access_control_origin_type = "s3"
-  signing_behavior                  = "always"
-  signing_protocol                  = "sigv4"
+# ======== 2. DNS Zone ========
+data "aws_route53_zone" "selected" {
+  name = local.web_domain
 }
 
+# ======== 3. ACM Certificate ========
 resource "aws_acm_certificate" "main" {
-  domain_name               = var.apex_domain
-  subject_alternative_names = ["*.${var.apex_domain}"]
+  domain_name               = local.web_domain  # TODO first item in list from locals
+  subject_alternative_names = ["*.${local.web_domain}"]   # TODO wildcard certificate as default.
   validation_method         = "DNS"
   lifecycle {
     create_before_destroy = true
@@ -57,7 +63,7 @@ resource "aws_route53_record" "certificate_validation" {
       type   = dvo.resource_record_type
     }
   }
-
+  # Keep these records in your DNS Zone for auto-renewal of certificate.
   allow_overwrite = true
   name            = each.value.name
   records         = [each.value.record]
@@ -71,6 +77,13 @@ resource "aws_acm_certificate_validation" "main" {
   validation_record_fqdns = [for record in aws_route53_record.certificate_validation : record.fqdn]
 }
 
+resource "aws_cloudfront_origin_access_control" "main" {
+  name                              = "${local.origin_id}-oac"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
 resource "aws_cloudfront_distribution" "main" {
   depends_on          = [aws_acm_certificate_validation.main]
   enabled             = true
@@ -79,15 +92,9 @@ resource "aws_cloudfront_distribution" "main" {
   aliases             = var.cf_aliases
   price_class         = "PriceClass_All"
 
-  tags = {
-    Client      = var.client_name
-    ManagedBy   = "terraform"
-    Environment = var.environment
-  }
-
   origin {
-    domain_name              = aws_s3_bucket.main.bucket_regional_domain_name
-    origin_id                = var.apex_domain
+    domain_name              = aws_s3_bucket.origin.bucket_regional_domain_name
+    origin_id                = local.origin_id
     origin_access_control_id = aws_cloudfront_origin_access_control.main.id
   }
 
@@ -97,7 +104,7 @@ resource "aws_cloudfront_distribution" "main" {
     compress               = true
     allowed_methods        = var.cf_allowed_methods
     cached_methods         = var.cf_cached_methods
-    target_origin_id       = var.apex_domain
+    target_origin_id       = local.origin_id
   }
 
   restrictions {
@@ -123,7 +130,7 @@ resource "aws_cloudfront_distribution" "main" {
 
 resource "aws_route53_record" "apex_alias" {
   zone_id = data.aws_route53_zone.selected.zone_id
-  name    = var.apex_domain
+  name    = local.web_domain
   type    = "A"
 
   alias {
@@ -136,7 +143,7 @@ resource "aws_route53_record" "apex_alias" {
 resource "aws_route53_record" "www_alias" {
   count   = var.use_www
   zone_id = data.aws_route53_zone.selected.zone_id
-  name    = "www.${var.apex_domain}"
+  name    = "www.${local.web_domain}"
   type    = "A"
 
   alias {
