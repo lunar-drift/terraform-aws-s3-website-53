@@ -12,19 +12,14 @@ provider "aws" {
 }
 
 module "static-s3-website" {
-  source      = "../../"
-  apex_domain = "geotorus.com"
-  use_www     = 1
-  cloudfront = {
-    cf_aliases                   = ["geotorus.com", "www.geotorus.com"]
-    cf_geo_restriction_type      = "none"
-    cf_geo_restriction_locations = []
-  }
+  source     = "../../"
+  web_domain = "geotorus.com."
+  cf_aliases = ["geotorus.com", "www.geotorus.com"]
 }
 
-# Upload index.html to bucket
+
 resource "aws_s3_object" "object" {
-  bucket       = module.static-s3-website.bucket.id
+  bucket       = module.static-s3-website.origin_bucket_name
   key          = "index.html"
   source       = "./index.html"
   content_type = "text/html"
